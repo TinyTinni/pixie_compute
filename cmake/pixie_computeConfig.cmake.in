@@ -1,0 +1,16 @@
+@PACKAGE_INIT@
+
+include(CMakeFindDependencyMacro)
+
+find_dependency(volk)
+
+if(@PIXIE_COMPUTE_ENABLE_SLANG@)
+    find_dependency(slang)
+    if(NOT slang_FOUND)
+        set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}" ${CMAKE_MODULE_PATH})
+        find_dependency(Slang)
+    endif()
+endif()
+
+include("${CMAKE_CURRENT_LIST_DIR}/pixie_computeTargets.cmake")
+check_required_components(pixie_compute)

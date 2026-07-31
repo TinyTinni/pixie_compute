@@ -1,0 +1,7 @@
+# Slang runtime global initialization leak
+leak:Slang
+leak:slang
+# Mesa/lavapipe driver leak
+leak:llvmpipe
+leak:radv
+leak:vulkan
