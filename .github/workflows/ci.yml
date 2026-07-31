@@ -1,0 +1,63 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    env:
+      CCACHE_MAXSIZE: 500M
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache ccache
+        uses: actions/cache@v6
+        with:
+          path: ~/.cache/ccache
+          key: ${{ runner.os }}-ccache-${{ hashFiles('CMakeLists.txt', 'cmake/**') }}
+          restore-keys: ${{ runner.os }}-ccache-
+
+      - name: Cache CPM sources
+        uses: actions/cache@v6
+        with:
+          path: ~/.cache/cpm
+          key: ${{ runner.os }}-cpm-${{ hashFiles('CMakeLists.txt', 'cmake/**') }}
+          restore-keys: ${{ runner.os }}-cpm-
+
+      - name: Cache shader-slang
+        uses: actions/cache@v6
+        with:
+          path: ~/slang.tar.gz
+          key: ${{ runner.os }}-slang-v2026.8.1
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build g++ ccache mesa-vulkan-drivers libvulkan-dev vulkan-validationlayers
+
+      - name: Install shader-slang
+        run: |
+          if [ ! -f ~/slang.tar.gz ]; then
+            curl -fsSL -o ~/slang.tar.gz \
+              https://github.com/shader-slang/slang/releases/download/v2026.8.1/slang-2026.8.1-linux-x86_64.tar.gz
+          fi
+          sudo mkdir -p /opt/shader-slang-bin
+          sudo tar -xzf ~/slang.tar.gz -C /opt/shader-slang-bin
+          echo "/opt/shader-slang-bin/lib" | sudo tee /etc/ld.so.conf.d/shader-slang.conf >/dev/null
+          sudo ldconfig
+          echo "/opt/shader-slang-bin/bin" >> "$GITHUB_PATH"
+
+      - name: Configure
+        run: cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_COMPILE_WARNING_AS_ERROR=ON -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+        env:
+          CPM_SOURCE_CACHE: /home/runner/.cache/cpm
+
+      - name: Build
+        run: cmake --build build -j$(nproc)
+
+      - name: Test
+        run: ctest --test-dir build --output-on-failure -j$(nproc)

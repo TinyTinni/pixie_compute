@@ -1,0 +1,28 @@
+BasedOnStyle: LLVM
+Language: Cpp
+IndentWidth: 4
+ContinuationIndentWidth: 4
+ColumnLimit: 100
+BreakBeforeBraces: Allman
+PointerAlignment: Right
+ReferenceAlignment: Right
+AllowShortFunctionsOnASingleLine: InlineOnly
+AllowShortIfStatementsOnASingleLine: false
+AllowShortLoopsOnASingleLine: false
+AllowShortCaseLabelsOnASingleLine: false
+AllowShortBlocksOnASingleLine: Never
+NamespaceIndentation: None
+IndentCaseLabels: false
+AccessModifierOffset: 0
+SortIncludes: true
+IncludeBlocks: Regroup
+IncludeCategories:
+  - Regex: '^"(pixie_compute)/'
+    Priority: 1
+  - Regex: '^"'
+    Priority: 1
+  - Regex: '^<'
+    Priority: 2
+Standard: c++17
+SpaceAfterTemplateKeyword: true
+ConstructorInitializerIndentWidth: 4
